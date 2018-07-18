@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using BusinessLayer.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using BusinessLayer.Services;
 using Shared.DTO;
 
 namespace PresentationLayer.Controllers
@@ -18,57 +17,57 @@ namespace PresentationLayer.Controllers
 
         // GET api/Pilots
         [HttpGet]
-        public List<Pilot> GetPilots() => Services.GetAll();
+        public async Task<List<Pilot>> GetPilots() => await Services.GetAllAsync();
 
         // GET api/Pilots/5
         [HttpGet("{id}")]
-        public ObjectResult GetPilotDetails(int id)
+        public async Task<ObjectResult> GetPilotDetails(int id)
         {
-            if (Services.IsExist(id) == null) return NotFound("Aircraft with id = " + id + " not found");
-            return Ok(Services.GetDetails(id));
+            if (await Services.IsExistAsync(id) == null) return NotFound("Aircraft with id = " + id + " not found");
+            return Ok(await Services.GetDetailsAsync(id));
         }
 
         // POST api/Pilots
         [HttpPost]
-        public ObjectResult PostPilot([FromBody]Pilot pilot)
+        public async Task<ObjectResult> PostPilot([FromBody]Pilot pilot)
         {
             if (pilot == null)
                 return BadRequest("Enter correct entity");
             if (pilot.Id != 0)
                 return BadRequest("You can`t enter the id");
-            Services.Add(pilot);
+            await Services.AddAsync(pilot);
             return Ok(pilot);
         }
 
         // PUT api/Pilots/5
         [HttpPut("{id}")]
-        public ObjectResult PutPilot(int id, [FromBody]Pilot pilot)
+        public async Task<ObjectResult> PutPilot(int id, [FromBody]Pilot pilot)
         {
-            if (pilot == null || Services.IsExist(id) == null)
+            if (pilot == null || await Services.IsExistAsync(id) == null)
                 return NotFound("Entity with id = " + id + " not found");
             if (pilot.Id != id)
             {
                 if (pilot.Id == 0) pilot.Id = id;
                 else return BadRequest("You can`t change the id");
             }
-            Services.Update(pilot);
+            await Services.UpdateAsync(pilot);
             return Ok(pilot);
         }
 
         // DELETE api/Pilots/5
         [HttpDelete("{id}")]
-        public HttpResponseMessage DeletePilot(int id)
+        public async Task<HttpResponseMessage> DeletePilot(int id)
         {
-            if (Services.IsExist(id) == null) return new HttpResponseMessage(HttpStatusCode.NotFound);
-            Services.Remove(id);
+            if (await Services.IsExistAsync(id) == null) return new HttpResponseMessage(HttpStatusCode.NotFound);
+            await Services.RemoveAsync(id);
             return new HttpResponseMessage(HttpStatusCode.NoContent);
         }
 
         // DELETE api/Pilots
         [HttpDelete]
-        public HttpResponseMessage DeletePilots()
+        public async Task<HttpResponseMessage> DeletePilots()
         {
-            Services.RemoveAll();
+            await Services.RemoveAllAsync();
             return new HttpResponseMessage(HttpStatusCode.NoContent);
         }
     }

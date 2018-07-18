@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using BusinessLayer.Interfaces;
 using DataAccessLayer;
@@ -19,41 +20,44 @@ namespace BusinessLayer.Services
             _mapper = mapper;
         }
 
-        public bool ValidationForeignId(Pilot ob) => true;
+        public async Task<bool> ValidationForeignIdAsync(Pilot ob) => await Task.FromResult(true);
 
-        public Pilot IsExist(int id)
-            => _mapper.Map<DataAccessLayer.Models.Pilot, Pilot>(_unitOfWork.Set<DataAccessLayer.Models.Pilot>().Get(id).FirstOrDefault());
+        public async Task<Pilot> IsExistAsync(int id)
+        {
+            var ob = await _unitOfWork.Set<DataAccessLayer.Models.Pilot>().GetAsync(id);
+            return _mapper.Map<DataAccessLayer.Models.Pilot, Pilot>(ob.FirstOrDefault());
+        }
 
         public DataAccessLayer.Models.Pilot ConvertToModel(Pilot pilot)
             => _mapper.Map<Pilot, DataAccessLayer.Models.Pilot>(pilot);
 
-        public List<Pilot> GetAll()
-            => _mapper.Map<List<DataAccessLayer.Models.Pilot>, List<Pilot>>(_unitOfWork.Set<DataAccessLayer.Models.Pilot>().Get());
+        public async Task<List<Pilot>> GetAllAsync()
+            => _mapper.Map<List<DataAccessLayer.Models.Pilot>, List<Pilot>>(await _unitOfWork.Set<DataAccessLayer.Models.Pilot>().GetAsync());
 
-        public Pilot GetDetails(int id) => IsExist(id);
+        public async Task<Pilot> GetDetailsAsync(int id) => await IsExistAsync(id);
 
-        public void Add(Pilot pilot)
+        public async Task AddAsync(Pilot pilot)
         {
-            _unitOfWork.Set<DataAccessLayer.Models.Pilot>().Create(ConvertToModel(pilot));
-            _unitOfWork.SaveChages();
+            await _unitOfWork.Set<DataAccessLayer.Models.Pilot>().CreateAsync(ConvertToModel(pilot));
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void Update(Pilot pilot)
+        public async Task UpdateAsync(Pilot pilot)
         {
             _unitOfWork.Set<DataAccessLayer.Models.Pilot>().Update(ConvertToModel(pilot));
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void Remove(int id)
+        public async Task RemoveAsync(int id)
         {
             _unitOfWork.Set<DataAccessLayer.Models.Pilot>().Delete(id);
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void RemoveAll()
+        public async Task RemoveAllAsync()
         {
             _unitOfWork.Set<DataAccessLayer.Models.Pilot>().Delete();
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

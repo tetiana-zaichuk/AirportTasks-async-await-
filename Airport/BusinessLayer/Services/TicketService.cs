@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using BusinessLayer.Interfaces;
-using DataAccessLayer;
 using DataAccessLayer.Interfaces;
 using Shared.DTO;
 
@@ -19,42 +19,47 @@ namespace BusinessLayer.Services
             _mapper = mapper;
         }
 
-        public bool ValidationForeignId(Ticket ob)
-            => _unitOfWork.FlightRepository.Get().FirstOrDefault(o => o.Id == ob.FlightId) != null;
+        public async Task<bool> ValidationForeignIdAsync(Ticket ob)
+        {
+            var listF=await _unitOfWork.FlightRepository.GetAsync();
+            return listF.FirstOrDefault(o => o.Id == ob.FlightId) != null;
+        }
 
-        public Ticket IsExist(int id)
-            => _mapper.Map<DataAccessLayer.Models.Ticket, Ticket>(_unitOfWork.Set<DataAccessLayer.Models.Ticket>().Get(id).FirstOrDefault());
-
+        public async Task<Ticket> IsExistAsync(int id)
+        {
+            var ob = await _unitOfWork.Set<DataAccessLayer.Models.Ticket>().GetAsync(id);
+            return _mapper.Map<DataAccessLayer.Models.Ticket, Ticket>(ob.FirstOrDefault());
+        }
         public DataAccessLayer.Models.Ticket ConvertToModel(Ticket ticket)
             => _mapper.Map<Ticket, DataAccessLayer.Models.Ticket>(ticket);
 
-        public List<Ticket> GetAll()
-            => _mapper.Map<List<DataAccessLayer.Models.Ticket>, List<Ticket>>(_unitOfWork.Set<DataAccessLayer.Models.Ticket>().Get());
+        public async Task<List<Ticket>> GetAllAsync()
+            => _mapper.Map<List<DataAccessLayer.Models.Ticket>, List<Ticket>>(await _unitOfWork.Set<DataAccessLayer.Models.Ticket>().GetAsync());
 
-        public Ticket GetDetails(int id) => IsExist(id);
+        public async Task<Ticket> GetDetailsAsync(int id) => await IsExistAsync(id);
 
-        public void Add(Ticket ticket)
+        public async Task AddAsync(Ticket ticket)
         {
-            _unitOfWork.Set<DataAccessLayer.Models.Ticket>().Create(ConvertToModel(ticket));
-            _unitOfWork.SaveChages();
+            await _unitOfWork.Set<DataAccessLayer.Models.Ticket>().CreateAsync(ConvertToModel(ticket));
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void Update(Ticket ticket)
+        public async Task UpdateAsync(Ticket ticket)
         {
             _unitOfWork.Set<DataAccessLayer.Models.Ticket>().Update(ConvertToModel(ticket));
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void Remove(int id)
+        public async Task RemoveAsync(int id)
         {
             _unitOfWork.Set<DataAccessLayer.Models.Ticket>().Delete(id);
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void RemoveAll()
+        public async Task RemoveAllAsync()
         {
             _unitOfWork.Set<DataAccessLayer.Models.Ticket>().Delete();
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using BusinessLayer.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Shared.DTO;
@@ -17,56 +18,56 @@ namespace PresentationLayer.Controllers
 
         // GET api/AircraftsTypes
         [HttpGet]
-        public List<AircraftType> GetAircraftsTypes() => Services.GetAll();
+        public async Task<List<AircraftType>> GetAircraftsTypes() => await Services.GetAllAsync();
 
         // GET api/AircraftsTypes/5
         [HttpGet("{id}")]
-        public ObjectResult GetAircraftTypeDetails(int id)
+        public async Task<ObjectResult> GetAircraftTypeDetails(int id)
         {
-            return Ok(Services.GetDetails(id));
+            return Ok(await Services.GetDetailsAsync(id));
         }
 
         // POST api/AircraftsTypes
         [HttpPost]
-        public ObjectResult PostAircraftType([FromBody]AircraftType aircraftType)
+        public async Task<ObjectResult> PostAircraftType([FromBody]AircraftType aircraftType)
         {
             if (aircraftType == null)
                 return BadRequest("Enter correct entity");
             if (aircraftType.Id != 0)
                 return BadRequest("You can`t enter the id");
-            Services.Add(aircraftType);
+            await Services.AddAsync(aircraftType);
             return Ok(aircraftType);
         }
 
         // PUT api/AircraftsTypes/5
         [HttpPut("{id}")]
-        public ObjectResult PutAircraftType(int id, [FromBody]AircraftType aircraftType)
+        public async Task<ObjectResult> PutAircraftType(int id, [FromBody]AircraftType aircraftType)
         {
-            if (aircraftType == null || Services.IsExist(id) == null)
+            if (aircraftType == null || await Services.IsExistAsync(id) == null)
                 return NotFound("Entity with id = " + id + " not found");
             if (aircraftType.Id != id)
             {
                 if (aircraftType.Id == 0) aircraftType.Id = id;
                 else return BadRequest("You can`t change the id");
             }
-            Services.Update(aircraftType);
+            await Services.UpdateAsync(aircraftType);
             return Ok(aircraftType);
         }
 
         // DELETE api/AircraftsTypes/5
         [HttpDelete("{id}")]
-        public HttpResponseMessage DeleteAircraftType(int id)
+        public async Task<HttpResponseMessage> DeleteAircraftType(int id)
         {
-            if (Services.IsExist(id) == null) return new HttpResponseMessage(HttpStatusCode.NotFound);
-            Services.Remove(id);
+            if (await Services.IsExistAsync(id) == null) return new HttpResponseMessage(HttpStatusCode.NotFound);
+            await Services.RemoveAsync(id);
             return new HttpResponseMessage(HttpStatusCode.NoContent);
         }
 
         // DELETE api/AircraftsTypes
         [HttpDelete]
-        public HttpResponseMessage DeleteAircraftsTypes()
+        public async Task<HttpResponseMessage> DeleteAircraftsTypes()
         {
-            Services.RemoveAll();
+            await Services.RemoveAllAsync();
             return new HttpResponseMessage(HttpStatusCode.NoContent);
         }
     }

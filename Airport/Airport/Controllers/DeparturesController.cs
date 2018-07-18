@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using BusinessLayer.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using BusinessLayer.Services;
 using Shared.DTO;
 
 namespace PresentationLayer.Controllers
@@ -18,65 +18,65 @@ namespace PresentationLayer.Controllers
 
         // GET api/Departures
         [HttpGet]
-        public List<Departure> GetDepartures() => Services.GetAll();
+        public async Task<List<Departure>> GetDepartures() => await Services.GetAllAsync();
 
         // GET api/Departures/5
         [HttpGet("{id}")]
-        public ObjectResult GetDepartureDetails(int id)
+        public async Task<ObjectResult> GetDepartureDetails(int id)
         {
-            if (Services.IsExist(id) == null) return NotFound("Departure with id = " + id + " not found");
-            return Ok(Services.GetDetails(id));
+            if (await Services.IsExistAsync(id) == null) return NotFound("Departure with id = " + id + " not found");
+            return Ok(await Services.GetDetailsAsync(id));
         }
 
         // POST api/Departures
         [HttpPost]
-        public ObjectResult PostDeparture([FromBody]Departure departure)
+        public async Task<ObjectResult> PostDeparture([FromBody]Departure departure)
         {
             if (departure == null)
                 return BadRequest("Enter correct entity");
             if (DateTime.Compare(departure.DepartureDate, DateTime.UtcNow) < 0)
                 return BadRequest("Wrong departure date");
-            if (!Services.ValidationForeignId(departure))
+            if (!await Services.ValidationForeignIdAsync(departure))
                 return BadRequest("Wrong foreign id");
             if (departure.Id != 0)
                 return BadRequest("You can`t enter the id");
-            Services.Add(departure);
+            await Services.AddAsync(departure);
             return Ok(departure);
         }
 
         // PUT api/Departures/5
         [HttpPut("{id}")]
-        public ObjectResult PutDeparture(int id, [FromBody]Departure departure)
+        public async Task<ObjectResult> PutDeparture(int id, [FromBody]Departure departure)
         {
-            if (departure==null || Services.IsExist(id) == null)
+            if (departure==null || await Services.IsExistAsync(id) == null)
                 return NotFound("Entity with id = " + id + " not found");
             if (DateTime.Compare(departure.DepartureDate, DateTime.UtcNow) < 0)
                 return BadRequest("Wrong departure date");
-            if (!Services.ValidationForeignId(departure))
+            if (!await Services.ValidationForeignIdAsync(departure))
                 return BadRequest("Wrong foreign id");
             if (departure.Id != id)
             {
                 if (departure.Id==0) departure.Id = id;
                 else return BadRequest("You can`t change the id");
             }
-            Services.Update(departure);
+            await Services.UpdateAsync(departure);
             return Ok(departure);
         }
 
         // DELETE api/Departures/5
         [HttpDelete("{id}")]
-        public HttpResponseMessage DeleteDeparture(int id)
+        public async Task<HttpResponseMessage> DeleteDeparture(int id)
         {
-            if (Services.IsExist(id) == null) return new HttpResponseMessage(HttpStatusCode.NotFound);
-            Services.Remove(id);
+            if (await Services.IsExistAsync(id) == null) return new HttpResponseMessage(HttpStatusCode.NotFound);
+            await Services.RemoveAsync(id);
             return new HttpResponseMessage(HttpStatusCode.NoContent);
         }
 
         // DELETE api/Departures
         [HttpDelete]
-        public HttpResponseMessage DeleteDepartures()
+        public async Task<HttpResponseMessage> DeleteDepartures()
         {
-            Services.RemoveAll();
+            await Services.RemoveAllAsync();
             return new HttpResponseMessage(HttpStatusCode.NoContent);
         }
     }

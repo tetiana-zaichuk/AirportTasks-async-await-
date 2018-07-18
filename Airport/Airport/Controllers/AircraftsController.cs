@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using BusinessLayer.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Shared.DTO;
@@ -17,68 +18,68 @@ namespace PresentationLayer.Controllers
 
         // GET api/Aircrafts
         [HttpGet]
-        public List<Aircraft> GetAircrafts() => Services.GetAll();
+        public async Task<List<Aircraft>> GetAircrafts() => await Services.GetAllAsync();
 
         // GET api/Aircrafts/5
         [HttpGet("{id}")]
-        public ObjectResult GetAircraftDetails(int id)
+        public async Task<ObjectResult> GetAircraftDetails(int id)
         {
-            if (Services.IsExist(id) == null)
+            if (await Services.IsExistAsync(id) == null)
                 return NotFound("Aircraft with id = " + id + " not found");
-            return Ok(Services.GetDetails(id));
+            return Ok(await Services.GetDetailsAsync(id));
         }
 
         // POST api/Aircrafts
         [HttpPost]
-        public ObjectResult PostAircraft([FromBody]Aircraft aircraft)
+        public async Task<ObjectResult> PostAircraft([FromBody]Aircraft aircraft)
         {
             if (aircraft == null)
                 return BadRequest("Enter correct entity");
             if (DateTime.Compare(aircraft.AircraftReleaseDate, DateTime.UtcNow) >= 0)
                 return BadRequest("Wrong release date");
-            if (!Services.ValidationForeignId(aircraft))
+            if (!await Services.ValidationForeignIdAsync(aircraft))
                 return BadRequest("Wrong foreign id");
             if (aircraft.Id != 0)
                 return BadRequest("You can`t enter the id");
-            //aircraft.Id = Services.GetAll().Count + 1;
-            Services.Add(aircraft);
+            //aircraft.Id = Services.GetAllAsync().Count + 1;
+            await Services.AddAsync(aircraft);
             return Ok(aircraft);
         }
 
         // PUT api/Aircrafts/5
         [HttpPut("{id}")]
-        public ObjectResult PutAircraft(int id, [FromBody]Aircraft aircraft)
+        public async Task<ObjectResult> PutAircraft(int id, [FromBody]Aircraft aircraft)
         {
-            if (aircraft == null || Services.IsExist(id) == null)
+            if (aircraft == null || Services.IsExistAsync(id) == null)
                 return NotFound("Entity with id = " + id + " not found");
             if (DateTime.Compare(aircraft.AircraftReleaseDate, DateTime.UtcNow) >= 0)
                 return BadRequest("Wrong release date");
-            if (!Services.ValidationForeignId(aircraft))
+            if (!await Services.ValidationForeignIdAsync(aircraft))
                 return BadRequest("Wrong foreign id");
             if (aircraft.Id != id)
             {
                 if (aircraft.Id == 0) aircraft.Id = id;
                 else return BadRequest("You can`t change the id");
             }
-            Services.Update(aircraft);
+            await Services.UpdateAsync(aircraft);
             return Ok(aircraft);
         }
 
         // DELETE api/Aircrafts/5
         [HttpDelete("{id}")]
-        public HttpResponseMessage DeleteAircraft(int id)
+        public async Task<HttpResponseMessage> DeleteAircraft(int id)
         {
-            if (Services.IsExist(id) == null)
+            if (await Services.IsExistAsync(id) == null)
                 return new HttpResponseMessage(HttpStatusCode.NotFound);
-            Services.Remove(id);
+            await Services.RemoveAsync(id);
             return new HttpResponseMessage(HttpStatusCode.NoContent);
         }
         
         // DELETE api/Aircrafts
         [HttpDelete]
-        public HttpResponseMessage DeleteAircrafts()
+        public async Task<HttpResponseMessage> DeleteAircrafts()
         {
-            Services.RemoveAll();
+            await Services.RemoveAllAsync();
             return new HttpResponseMessage(HttpStatusCode.NoContent);
         }
     }

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using BusinessLayer.Interfaces;
-using DataAccessLayer;
 using DataAccessLayer.Interfaces;
 using Shared.DTO;
 
@@ -17,44 +17,50 @@ namespace BusinessLayer.Services
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-        }       
+        }
 
-        public bool ValidationForeignId(Aircraft ob)
-            => _unitOfWork.Set<DataAccessLayer.Models.AircraftType>().Get().FirstOrDefault(o=>o.Id==ob.AircraftType.Id)!=null;
+        public async Task<bool> ValidationForeignIdAsync(Aircraft ob)
+        {
+            var list = await _unitOfWork.Set<DataAccessLayer.Models.AircraftType>().GetAsync();
+            return list.FirstOrDefault(o => o.Id == ob.AircraftType.Id) != null;
+        }
 
-        public Aircraft IsExist(int id)
-            => _mapper.Map<DataAccessLayer.Models.Aircraft, Aircraft>(_unitOfWork.AircraftRepository.Get(id).FirstOrDefault());
+        public async Task<Aircraft> IsExistAsync(int id)
+        {
+            var ob = await _unitOfWork.AircraftRepository.GetAsync(id);
+            return _mapper.Map<DataAccessLayer.Models.Aircraft, Aircraft>(ob.FirstOrDefault());
+        }
 
         public DataAccessLayer.Models.Aircraft ConvertToModel(Aircraft aircraft)
             => _mapper.Map<Aircraft, DataAccessLayer.Models.Aircraft>(aircraft);
 
-        public List<Aircraft> GetAll()
-            => _mapper.Map<List<DataAccessLayer.Models.Aircraft>, List<Aircraft>>(_unitOfWork.AircraftRepository.Get());
+        public async Task<List<Aircraft>> GetAllAsync()
+            => _mapper.Map<List<DataAccessLayer.Models.Aircraft>, List<Aircraft>>(await _unitOfWork.AircraftRepository.GetAsync());
 
-        public Aircraft GetDetails(int id) => IsExist(id);
+        public async Task<Aircraft> GetDetailsAsync(int id) => await IsExistAsync(id);
 
-        public void Add(Aircraft aircraft)
+        public async Task AddAsync(Aircraft aircraft)
         {
-            _unitOfWork.AircraftRepository.Create(ConvertToModel(aircraft));
-            _unitOfWork.SaveChages();
+            await _unitOfWork.AircraftRepository.CreateAsync(ConvertToModel(aircraft));
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void Update(Aircraft aircraft)
+        public async Task UpdateAsync(Aircraft aircraft)
         {
             _unitOfWork.AircraftRepository.Update(ConvertToModel(aircraft));
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void Remove(int id)
+        public async Task RemoveAsync(int id)
         {
             _unitOfWork.AircraftRepository.Delete(id);
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void RemoveAll()
+        public async Task RemoveAllAsync()
         {
             _unitOfWork.AircraftRepository.Delete();
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

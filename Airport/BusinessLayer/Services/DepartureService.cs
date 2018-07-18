@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using BusinessLayer.Interfaces;
 using DataAccessLayer;
@@ -19,49 +20,50 @@ namespace BusinessLayer.Services
             _mapper = mapper;
         }
 
-        public bool ValidationForeignId(Departure ob)
+        public async Task<bool> ValidationForeignIdAsync(Departure ob)
         {
-            return _unitOfWork.AircraftRepository.Get()
-                        .FirstOrDefault(o => o.Id == ob.Aircraft.Id) != null &&
-                    _unitOfWork.CrewRepository.Get().FirstOrDefault(o => o.Id == ob.Crew.Id) !=
-                    null &&
-                    _unitOfWork.FlightRepository.Get().FirstOrDefault(o => o.Id == ob.Flight.Id) !=
-                    null;
+            var listPlane = await _unitOfWork.AircraftRepository.GetAsync();
+            var listCrew = await _unitOfWork.CrewRepository.GetAsync();
+            var listFlight = await _unitOfWork.FlightRepository.GetAsync();
+            return listPlane.FirstOrDefault(o => o.Id == ob.Aircraft.Id) != null && listCrew.FirstOrDefault(o => o.Id == ob.Crew.Id) != null && listFlight.FirstOrDefault(o => o.Id == ob.Flight.Id) != null;
         }
 
-        public Departure IsExist(int id)
-            => _mapper.Map<DataAccessLayer.Models.Departure, Departure>(_unitOfWork.DepartureRepository.Get(id).FirstOrDefault());
+        public async Task<Departure> IsExistAsync(int id)
+        {
+            var ob = await _unitOfWork.DepartureRepository.GetAsync(id);
+            return _mapper.Map<DataAccessLayer.Models.Departure, Departure>(ob.FirstOrDefault());
+        }
 
         public DataAccessLayer.Models.Departure ConvertToModel(Departure departure)
             => _mapper.Map<Departure, DataAccessLayer.Models.Departure>(departure);
 
-        public List<Departure> GetAll()
-            => _mapper.Map<List<DataAccessLayer.Models.Departure>, List<Departure>>(_unitOfWork.DepartureRepository.Get());
+        public async Task<List<Departure>> GetAllAsync()
+            => _mapper.Map<List<DataAccessLayer.Models.Departure>, List<Departure>>(await _unitOfWork.DepartureRepository.GetAsync());
 
-        public Departure GetDetails(int id) => IsExist(id);
+        public async Task<Departure> GetDetailsAsync(int id) => await IsExistAsync(id);
 
-        public void Add(Departure departure)
+        public async Task AddAsync(Departure departure)
         {
-            _unitOfWork.DepartureRepository.Create(ConvertToModel(departure));
-            _unitOfWork.SaveChages();
+            await _unitOfWork.DepartureRepository.CreateAsync(ConvertToModel(departure));
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void Update(Departure departure)
+        public async Task UpdateAsync(Departure departure)
         {
             _unitOfWork.DepartureRepository.Update(ConvertToModel(departure));
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void Remove(int id)
+        public async Task RemoveAsync(int id)
         {
             _unitOfWork.DepartureRepository.Delete(id);
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void RemoveAll()
+        public async Task RemoveAllAsync()
         {
             _unitOfWork.DepartureRepository.Delete();
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

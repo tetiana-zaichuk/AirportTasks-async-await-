@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using BusinessLayer.Interfaces;
 using DataAccessLayer;
@@ -19,47 +20,52 @@ namespace BusinessLayer.Services
             _mapper = mapper;
         }
 
-        public bool ValidationForeignId(Crew ob)
+        public async Task<bool> ValidationForeignIdAsync(Crew ob)
         {
             //if (ob.Stewardesses == null) return false;
             foreach (var st in ob.Stewardesses)
             {
-                if (_unitOfWork.Set<DataAccessLayer.Models.Stewardess>().Get(st.Id).FirstOrDefault() == null) return false;
+                var listSt = await _unitOfWork.Set<DataAccessLayer.Models.Stewardess>().GetAsync(st.Id);
+                if (listSt.FirstOrDefault() == null) return false;
             }
-            return _unitOfWork.Set<DataAccessLayer.Models.Pilot>().Get().FirstOrDefault(o => o.Id == ob.Pilot.Id) != null;
-            
+            var listP = await _unitOfWork.Set<DataAccessLayer.Models.Pilot>().GetAsync();
+            return listP.FirstOrDefault(o => o.Id == ob.Pilot.Id) != null;
         }
 
-        public Crew IsExist(int id) => _mapper.Map<DataAccessLayer.Models.Crew, Crew>(_unitOfWork.CrewRepository.Get(id).FirstOrDefault());
+        public async Task<Crew> IsExistAsync(int id)
+        {
+            var listCrew = await _unitOfWork.CrewRepository.GetAsync(id);
+            return _mapper.Map<DataAccessLayer.Models.Crew, Crew>(listCrew.FirstOrDefault());
+        }
 
         public DataAccessLayer.Models.Crew ConvertToModel(Crew crew) => _mapper.Map<Crew, DataAccessLayer.Models.Crew>(crew);
 
-        public List<Crew> GetAll() => _mapper.Map<List<DataAccessLayer.Models.Crew>, List<Crew>>(_unitOfWork.CrewRepository.Get());
+        public async Task<List<Crew>> GetAllAsync() => _mapper.Map<List<DataAccessLayer.Models.Crew>, List<Crew>>(await _unitOfWork.CrewRepository.GetAsync());
 
-        public Crew GetDetails(int id) => IsExist(id);
+        public async Task<Crew> GetDetailsAsync(int id) => await IsExistAsync(id);
 
-        public void Add(Crew crew)
+        public async Task AddAsync(Crew crew)
         {
-            _unitOfWork.CrewRepository.Create(ConvertToModel(crew));
-            _unitOfWork.SaveChages();
+            await _unitOfWork.CrewRepository.CreateAsync(ConvertToModel(crew));
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void Update(Crew crew)
+        public async Task UpdateAsync(Crew crew)
         {
             _unitOfWork.CrewRepository.Update(ConvertToModel(crew));
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void Remove(int id)
+        public async Task RemoveAsync(int id)
         {
             _unitOfWork.CrewRepository.Delete(id);
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void RemoveAll()
+        public async Task RemoveAllAsync()
         {
             _unitOfWork.CrewRepository.Delete();
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

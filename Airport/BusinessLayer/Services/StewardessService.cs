@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using BusinessLayer.Interfaces;
 using DataAccessLayer;
@@ -19,41 +20,44 @@ namespace BusinessLayer.Services
             _mapper = mapper;
         }
 
-        public bool ValidationForeignId(Stewardess ob) => true;
+        public async Task<bool> ValidationForeignIdAsync(Stewardess ob) => await Task.FromResult(true);
 
-        public Stewardess IsExist(int id)
-            => _mapper.Map<DataAccessLayer.Models.Stewardess, Stewardess>(_unitOfWork.Set<DataAccessLayer.Models.Stewardess>().Get(id).FirstOrDefault());
+        public async Task<Stewardess> IsExistAsync(int id)
+        {
+            var ob = await _unitOfWork.Set<DataAccessLayer.Models.Stewardess>().GetAsync(id);
+            return _mapper.Map<DataAccessLayer.Models.Stewardess, Stewardess>(ob.FirstOrDefault());
+        }
 
         public DataAccessLayer.Models.Stewardess ConvertToModel(Stewardess stewardess)
             => _mapper.Map<Stewardess, DataAccessLayer.Models.Stewardess>(stewardess);
 
-        public List<Stewardess> GetAll()
-            => _mapper.Map<List<DataAccessLayer.Models.Stewardess>, List<Stewardess>>(_unitOfWork.Set<DataAccessLayer.Models.Stewardess>().Get());
+        public async Task<List<Stewardess>> GetAllAsync()
+            => _mapper.Map<List<DataAccessLayer.Models.Stewardess>, List<Stewardess>>(await _unitOfWork.Set<DataAccessLayer.Models.Stewardess>().GetAsync());
 
-        public Stewardess GetDetails(int id) => IsExist(id);
+        public async Task<Stewardess> GetDetailsAsync(int id) => await IsExistAsync(id);
 
-        public void Add(Stewardess stewardess)
+        public async Task AddAsync(Stewardess stewardess)
         {
-            _unitOfWork.Set<DataAccessLayer.Models.Stewardess>().Create(ConvertToModel(stewardess));
-            _unitOfWork.SaveChages();
+            await _unitOfWork.Set<DataAccessLayer.Models.Stewardess>().CreateAsync(ConvertToModel(stewardess));
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void Update(Stewardess stewardess)
+        public async Task UpdateAsync(Stewardess stewardess)
         {
             _unitOfWork.Set<DataAccessLayer.Models.Stewardess>().Update(ConvertToModel(stewardess));
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void Remove(int id)
+        public async Task RemoveAsync(int id)
         {
             _unitOfWork.Set<DataAccessLayer.Models.Stewardess>().Delete(id);
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void RemoveAll()
+        public async Task RemoveAllAsync()
         {
             _unitOfWork.Set<DataAccessLayer.Models.Stewardess>().Delete();
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

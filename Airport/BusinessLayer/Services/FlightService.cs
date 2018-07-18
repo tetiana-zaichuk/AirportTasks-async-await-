@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using BusinessLayer.Interfaces;
 using DataAccessLayer;
@@ -19,45 +20,49 @@ namespace BusinessLayer.Services
             _mapper = mapper;
         }
 
-        public bool ValidationForeignId(Flight ob)
+        public async Task<bool> ValidationForeignIdAsync(Flight ob)
         {
             foreach (var t in ob.Tickets)
             {
-                if (_unitOfWork.Set<DataAccessLayer.Models.Ticket>().Get(t.Id).FirstOrDefault() == null) return false;
+                var listT = await _unitOfWork.Set<DataAccessLayer.Models.Ticket>().GetAsync(t.Id);
+                if (listT.FirstOrDefault() == null) return false;
             }
             return true;
         }
 
-        public Flight IsExist(int id) => _mapper.Map<DataAccessLayer.Models.Flight, Flight>(_unitOfWork.FlightRepository.Get(id).FirstOrDefault());
-
+        public async Task<Flight> IsExistAsync(int id)
+        {
+            var ob = await _unitOfWork.FlightRepository.GetAsync(id);
+            return _mapper.Map<DataAccessLayer.Models.Flight, Flight>(ob.FirstOrDefault());
+        }
         public DataAccessLayer.Models.Flight ConvertToModel(Flight flight) => _mapper.Map<Flight, DataAccessLayer.Models.Flight>(flight);
         
-        public List<Flight> GetAll() => _mapper.Map<List<DataAccessLayer.Models.Flight>, List<Flight>>(_unitOfWork.FlightRepository.Get());
+        public async Task<List<Flight>> GetAllAsync() => _mapper.Map<List<DataAccessLayer.Models.Flight>, List<Flight>>(await _unitOfWork.FlightRepository.GetAsync());
 
-        public Flight GetDetails(int id) => IsExist(id);
+        public async Task<Flight> GetDetailsAsync(int id) => await IsExistAsync(id);
 
-        public void Add(Flight flight)
+        public async Task AddAsync(Flight flight)
         {
-            _unitOfWork.FlightRepository.Create(ConvertToModel(flight));
-            _unitOfWork.SaveChages();
+            await _unitOfWork.FlightRepository.CreateAsync(ConvertToModel(flight));
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void Update(Flight flight)
+        public async Task UpdateAsync(Flight flight)
         {
             _unitOfWork.FlightRepository.Update(ConvertToModel(flight));
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void Remove(int id)
+        public async Task RemoveAsync(int id)
         {
             _unitOfWork.FlightRepository.Delete(id);
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void RemoveAll()
+        public async Task RemoveAllAsync()
         {
             _unitOfWork.FlightRepository.Delete();
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

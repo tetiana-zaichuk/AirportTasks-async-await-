@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using DataAccessLayer.Models;
 
 namespace DataAccessLayer.Interfaces
 {
     public interface IRepository<TEntity> where TEntity : Entity
     {
-        List<TEntity> Get(int? filter = null);
+        Task<List<TEntity>> GetAsync(int? filter = null);
 
-        void Create(TEntity entity, string createdBy = null);
+        Task CreateAsync(TEntity entity, string createdBy = null);
 
         void Update(TEntity entity, string modifiedBy = null);
 

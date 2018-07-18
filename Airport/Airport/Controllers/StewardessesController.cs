@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using BusinessLayer.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Shared.DTO;
@@ -16,57 +17,57 @@ namespace PresentationLayer.Controllers
 
         // GET api/Stewardesses
         [HttpGet]
-        public List<Stewardess> GetAircrafts() => Services.GetAll();
+        public async Task<List<Stewardess>> GetAircrafts() => await Services.GetAllAsync();
 
         // GET api/Stewardesses/5
         [HttpGet("{id}")]
-        public ObjectResult GetAircraftDetails(int id)
+        public async Task<ObjectResult> GetAircraftDetails(int id)
         {
-            if (Services.IsExist(id) == null) return NotFound("Aircraft with id = " + id + " not found");
-            return Ok(Services.GetDetails(id));
+            if (await Services.IsExistAsync(id) == null) return NotFound("Aircraft with id = " + id + " not found");
+            return Ok(await Services.GetDetailsAsync(id));
         }
 
         // POST api/Stewardesses
         [HttpPost]
-        public ObjectResult PostStewardess([FromBody]Stewardess stewardess)
+        public async Task<ObjectResult> PostStewardess([FromBody]Stewardess stewardess)
         {
             if (stewardess == null)
                 return BadRequest("Enter correct entity");
             if (stewardess.Id != 0)
                 return BadRequest("You can`t enter the id");
-            Services.Add(stewardess);
+            await Services.AddAsync(stewardess);
             return Ok(stewardess);
         }
 
         // PUT api/Stewardesses/5
         [HttpPut("{id}")]
-        public ObjectResult PutStewardess(int id, [FromBody]Stewardess stewardess)
+        public async Task<ObjectResult> PutStewardess(int id, [FromBody]Stewardess stewardess)
         {
-            if (stewardess == null || Services.IsExist(id) == null)
+            if (stewardess == null || await Services.IsExistAsync(id) == null)
                 return NotFound("Entity with id = " + id + " not found");
             if (stewardess.Id != id)
             {
                 if (stewardess.Id == 0) stewardess.Id = id;
                 else return BadRequest("You can`t change the id");
             }
-            Services.Update(stewardess);
+            await Services.UpdateAsync(stewardess);
             return Ok(stewardess);
         }
 
         // DELETE api/Stewardesses/5
         [HttpDelete("{id}")]
-        public HttpResponseMessage DeleteStewardess(int id)
+        public async Task<HttpResponseMessage> DeleteStewardess(int id)
         {
-            if (Services.IsExist(id) == null) return new HttpResponseMessage(HttpStatusCode.NotFound);
-            Services.Remove(id);
+            if (Services.IsExistAsync(id) == null) return new HttpResponseMessage(HttpStatusCode.NotFound);
+            await Services.RemoveAsync(id);
             return new HttpResponseMessage(HttpStatusCode.NoContent);
         }
 
         // DELETE api/Stewardesses
         [HttpDelete]
-        public HttpResponseMessage DeleteStewardesses()
+        public async Task<HttpResponseMessage> DeleteStewardesses()
         {
-            Services.RemoveAll();
+            await Services.RemoveAllAsync();
             return new HttpResponseMessage(HttpStatusCode.NoContent);
         }
     }

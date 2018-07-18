@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using DataAccessLayer.Interfaces;
 using DataAccessLayer.Models;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,7 @@ namespace DataAccessLayer.Repository
             Context = context;
         }
 
-        public virtual List<Flight> Get(int? filter = null)
+        public virtual async Task<List<Flight>> GetAsync(int? filter = null)
         {
             IQueryable<Flight> query = Context.Set<Flight>().Include(c => c.Tickets);
 
@@ -26,12 +27,12 @@ namespace DataAccessLayer.Repository
                 query = query.Where(e => e.Id == filter);
             }
 
-            return query.ToList();
+            return await query.ToListAsync();
         }
 
-        public virtual void Create(Flight entity, string createdBy = null)
+        public virtual async Task CreateAsync(Flight entity, string createdBy = null)
         {
-            Context.Set<Flight>().Add(entity);
+            await Context.Set<Flight>().AddAsync(entity);
         }
 
         public virtual void Update(Flight entity, string modifiedBy = null)

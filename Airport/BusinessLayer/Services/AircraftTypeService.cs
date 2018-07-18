@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using BusinessLayer.Interfaces;
 using DataAccessLayer;
@@ -19,41 +20,43 @@ namespace BusinessLayer.Services
             _mapper = mapper;
         }
 
-        public bool ValidationForeignId(AircraftType ob) => true;
+        public async Task<bool> ValidationForeignIdAsync(AircraftType ob) =>await Task.FromResult(true);
 
-        public AircraftType IsExist(int id)
-            => _mapper.Map<DataAccessLayer.Models.AircraftType, AircraftType>(_unitOfWork.Set<DataAccessLayer.Models.AircraftType>().Get(id).FirstOrDefault());
-
+        public async Task<AircraftType> IsExistAsync(int id)
+        {
+            var ob = await _unitOfWork.Set<DataAccessLayer.Models.AircraftType>().GetAsync(id);
+            return _mapper.Map<DataAccessLayer.Models.AircraftType, AircraftType>(ob.FirstOrDefault());
+        }
         public DataAccessLayer.Models.AircraftType ConvertToModel(AircraftType aircraftType)
             => _mapper.Map<AircraftType, DataAccessLayer.Models.AircraftType>(aircraftType);
 
-        public List<AircraftType> GetAll()
-            => _mapper.Map<List<DataAccessLayer.Models.AircraftType>, List<AircraftType>>(_unitOfWork.Set<DataAccessLayer.Models.AircraftType>().Get());
+        public async Task<List<AircraftType>> GetAllAsync()
+            => _mapper.Map<List<DataAccessLayer.Models.AircraftType>, List<AircraftType>>(await _unitOfWork.Set<DataAccessLayer.Models.AircraftType>().GetAsync());
 
-        public AircraftType GetDetails(int id) => IsExist(id);
+        public async Task<AircraftType> GetDetailsAsync(int id) => await IsExistAsync(id);
 
-        public void Add(AircraftType aircraftType)
+        public async Task AddAsync(AircraftType aircraftType)
         {
-            _unitOfWork.Set<DataAccessLayer.Models.AircraftType>().Create(ConvertToModel(aircraftType));
-            _unitOfWork.SaveChages();
+            await _unitOfWork.Set<DataAccessLayer.Models.AircraftType>().CreateAsync(ConvertToModel(aircraftType));
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void Update(AircraftType aircraftType)
+        public async Task UpdateAsync(AircraftType aircraftType)
         {
             _unitOfWork.Set<DataAccessLayer.Models.AircraftType>().Update(ConvertToModel(aircraftType));
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void Remove(int id)
+        public async Task RemoveAsync(int id)
         {
             _unitOfWork.Set<DataAccessLayer.Models.AircraftType>().Delete(id);
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void RemoveAll()
+        public async Task RemoveAllAsync()
         {
             _unitOfWork.Set<DataAccessLayer.Models.AircraftType>().Delete();
-            _unitOfWork.SaveChages();
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

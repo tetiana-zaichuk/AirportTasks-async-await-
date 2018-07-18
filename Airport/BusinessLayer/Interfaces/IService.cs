@@ -1,23 +1,24 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace BusinessLayer.Interfaces
 {
     public interface IService<T>
     {
-        bool ValidationForeignId(T ob);
+        Task<bool> ValidationForeignIdAsync(T ob);
 
-        T IsExist(int id);
+        Task<T> IsExistAsync(int id);
 
-        List<T> GetAll();
+        Task<List<T>> GetAllAsync();
         
-        T GetDetails(int id);
+        Task<T> GetDetailsAsync(int id);
 
-        void Add(T entity);
+        Task AddAsync(T entity);
 
-        void Update(T entity);
+        Task UpdateAsync(T entity);
 
-        void Remove(int id);
+        Task RemoveAsync(int id);
 
-        void RemoveAll();
+        Task RemoveAllAsync();
     }
 }
