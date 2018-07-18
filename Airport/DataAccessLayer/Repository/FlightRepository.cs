@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using DataAccessLayer.Interfaces;
 using DataAccessLayer.Models;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,7 @@ namespace DataAccessLayer.Repository
         {
             Context = context;
         }
-
+        
         public virtual async Task<List<Flight>> GetAsync(int? filter = null)
         {
             IQueryable<Flight> query = Context.Set<Flight>().Include(c => c.Tickets);
