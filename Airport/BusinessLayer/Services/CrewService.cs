@@ -46,18 +46,21 @@ namespace BusinessLayer.Services
                 pilot = _mapper.Map<Pilot10, Pilot>(c.pilot.FirstOrDefault());
                 stewardesses = _mapper.Map<List<Stewardess10>, List<Stewardess>>(c.stewardess);
                 listCrew.Add(new Crew() { Pilot = pilot, Stewardesses = stewardesses });
-                str = str + "\n Crew: "+ c.id+" Pilot: "+pilot.Id +" "+pilot.FirstName+ " Stewardess count: "+stewardesses.Count;
+                str = str + "\n Crew: " + c.id + " Pilot: " + pilot.Id + " " + pilot.FirstName + " Stewardess count: " + stewardesses.Count;
+                c.id = null;
             }
-            Task t1 = WriteDataToFileAsync(str);
-            Task t2 = _unitOfWork.CrewRepository.CreateListAsync(_mapper.Map<List<Crew>, List<DataAccessLayer.Models.Crew>>(listCrew));
-            await Task.WhenAll(new[] { t1, t2 });
+
+            Task t1 = _unitOfWork.CrewRepository.CreateListAsync(_mapper.Map<List<Crew>, List<DataAccessLayer.Models.Crew>>(listCrew));
+            Task t2 = _unitOfWork.SaveChangesAsync();
+            Task t3 = WriteDataToFileAsync(str);
+            await Task.WhenAll(new[] { t1, t2, t3 });
             return listCrew;
         }
 
         public async Task WriteDataToFileAsync(string str)
         {
             byte[] array = Encoding.Default.GetBytes("" + str);
-            string Path = "log_"+DateTime.UtcNow+".csv";
+            string Path = "log_" + DateTime.UtcNow.ToString("yyyy-dd-M--HH-mm-ss") + ".csv";
             using (var fstream = new FileStream(Path, FileMode.OpenOrCreate))
             {
                 fstream.Seek(0, SeekOrigin.End);

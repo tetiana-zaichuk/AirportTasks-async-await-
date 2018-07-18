@@ -67,8 +67,8 @@ namespace PresentationLayer
                 cfg.CreateMap<Shared.DTO.Pilot, Pilot>().ForMember(p => p.Crew, opt => opt.Ignore());
                 cfg.CreateMap<Shared.DTO.Crew, Crew>();
                 cfg.CreateMap<Shared.DTO.Pilot10, Shared.DTO.Pilot>()
-                    .ForMember("Dob",s=>s.MapFrom(m=>m.birthDate))
-                    .ForMember("Experience",s=>s.MapFrom(m=>m.exp));
+                    .ForMember("Dob", s => s.MapFrom(m => m.birthDate))
+                    .ForMember("Experience", s => s.MapFrom(m => m.exp));
                 cfg.CreateMap<Shared.DTO.Stewardess10, Shared.DTO.Stewardess>()
                     .ForMember("Dob", s => s.MapFrom(m => m.birthDate));
             });
