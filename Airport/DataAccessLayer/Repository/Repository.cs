@@ -33,6 +33,11 @@ namespace DataAccessLayer.Repository
             await Context.Set<TEntity>().AddAsync(entity);
         }
 
+        public virtual async Task CreateListAsync(List<TEntity> listEntity, string createdBy = null)
+        {
+            await Context.Set<TEntity>().AddRangeAsync(listEntity);
+        }
+
         public virtual void Update(TEntity entity, string modifiedBy = null)
         {
             TEntity oldEntity = Context.Set<TEntity>().Find(entity.Id);

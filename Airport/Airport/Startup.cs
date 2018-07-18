@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Linq;
+using AutoMapper;
 using BusinessLayer.Interfaces;
 using BusinessLayer.Services;
 using DataAccessLayer;
@@ -26,12 +27,12 @@ namespace PresentationLayer
         public void ConfigureServices(IServiceCollection services)
         {
             //string connection = Configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<AirportContext>(options=>options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=Airportdb;Trusted_Connection=True;"));
+            services.AddDbContext<AirportContext>(options => options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=Airportdb;Trusted_Connection=True;"));
 
             services.AddMvc();
             //services.AddScoped<DataSeends>();
             //services.AddScoped<AirportContext>();
-            
+
             //services.AddScoped<IRepository<Aircraft>, Repository<Aircraft>>();
             services.AddScoped<IRepository<AircraftType>, Repository<AircraftType>>();
             services.AddScoped<IRepository<Crew>, Repository<Crew>>();
@@ -42,14 +43,14 @@ namespace PresentationLayer
             services.AddScoped<IRepository<Ticket>, Repository<Ticket>>();
             services.AddScoped<IService<Shared.DTO.Aircraft>, AircraftService>();
             services.AddScoped<IService<Shared.DTO.AircraftType>, AircraftTypeService>();
-            services.AddScoped<IService<Shared.DTO.Crew>, CrewService>();
+            services.AddScoped<IServiceCrew, CrewService>();
             services.AddScoped<IService<Shared.DTO.Departure>, DepartureService>();
             services.AddScoped<IService<Shared.DTO.Flight>, FlightService>();
             services.AddScoped<IService<Shared.DTO.Pilot>, PilotService>();
             services.AddScoped<IService<Shared.DTO.Stewardess>, StewardessService>();
             services.AddScoped<IService<Shared.DTO.Ticket>, TicketService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddScoped<IMapper>(m => GetAutoMapperConfig().CreateMapper());           
+            services.AddScoped<IMapper>(m => GetAutoMapperConfig().CreateMapper());
         }
 
         private MapperConfiguration GetAutoMapperConfig()
@@ -65,6 +66,11 @@ namespace PresentationLayer
                 cfg.CreateMap<Pilot, Shared.DTO.Pilot>();
                 cfg.CreateMap<Shared.DTO.Pilot, Pilot>().ForMember(p => p.Crew, opt => opt.Ignore());
                 cfg.CreateMap<Shared.DTO.Crew, Crew>();
+                cfg.CreateMap<Shared.DTO.Pilot10, Shared.DTO.Pilot>()
+                    .ForMember("Dob",s=>s.MapFrom(m=>m.birthDate))
+                    .ForMember("Experience",s=>s.MapFrom(m=>m.exp));
+                cfg.CreateMap<Shared.DTO.Stewardess10, Shared.DTO.Stewardess>()
+                    .ForMember("Dob", s => s.MapFrom(m => m.birthDate));
             });
 
             return config;

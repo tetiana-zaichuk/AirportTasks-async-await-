@@ -10,6 +10,8 @@ namespace DataAccessLayer.Interfaces
 
         Task CreateAsync(TEntity entity, string createdBy = null);
 
+        Task CreateListAsync(List<TEntity> listEntity, string createdBy = null);
+
         void Update(TEntity entity, string modifiedBy = null);
 
         void Delete(int? filter = null);

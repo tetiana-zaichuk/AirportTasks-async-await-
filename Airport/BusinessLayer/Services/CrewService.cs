@@ -1,15 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using BusinessLayer.Interfaces;
 using DataAccessLayer;
 using DataAccessLayer.Interfaces;
+using Newtonsoft.Json;
 using Shared.DTO;
 
 namespace BusinessLayer.Services
 {
-    public class CrewService : IService<Crew>
+    public class CrewService : IServiceCrew
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -18,6 +23,46 @@ namespace BusinessLayer.Services
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+        }
+
+        public List<Crew10> GetInfo()
+        {
+            using (var client = new HttpClient())
+            {
+                var response = client.GetStringAsync("http://5b128555d50a5c0014ef1204.mockapi.io/crew").Result;
+                return JsonConvert.DeserializeObject<List<Crew10>>(response).Take(10).ToList();
+            }
+        }
+
+        public async Task<List<Crew>> Get10Async()
+        {
+            var oldList = GetInfo();
+            List<Crew> listCrew = new List<Crew>();
+            string str = "";
+            Pilot pilot;
+            List<Stewardess> stewardesses;
+            foreach (var c in oldList)
+            {
+                pilot = _mapper.Map<Pilot10, Pilot>(c.pilot.FirstOrDefault());
+                stewardesses = _mapper.Map<List<Stewardess10>, List<Stewardess>>(c.stewardess);
+                listCrew.Add(new Crew() { Pilot = pilot, Stewardesses = stewardesses });
+                str = str + "\n Crew: "+ c.id+" Pilot: "+pilot.Id +" "+pilot.FirstName+ " Stewardess count: "+stewardesses.Count;
+            }
+            Task t1 = WriteDataToFileAsync(str);
+            Task t2 = _unitOfWork.CrewRepository.CreateListAsync(_mapper.Map<List<Crew>, List<DataAccessLayer.Models.Crew>>(listCrew));
+            await Task.WhenAll(new[] { t1, t2 });
+            return listCrew;
+        }
+
+        public async Task WriteDataToFileAsync(string str)
+        {
+            byte[] array = Encoding.Default.GetBytes("" + str);
+            string Path = "log_"+DateTime.UtcNow+".csv";
+            using (var fstream = new FileStream(Path, FileMode.OpenOrCreate))
+            {
+                fstream.Seek(0, SeekOrigin.End);
+                await fstream.WriteAsync(array, 0, array.Length);
+            }
         }
 
         public async Task<bool> ValidationForeignIdAsync(Crew ob)

@@ -11,9 +11,14 @@ namespace PresentationLayer.Controllers
     [Route("api/[controller]")]
     public class CrewController : Controller
     {
-        private IService<Crew> Services { get; }
+        private IServiceCrew Services { get; }
 
-        public CrewController(IService<Crew> services) => Services = services;
+        public CrewController(IServiceCrew services) => Services = services;
+
+        // GET api/Crew/Crew10
+        [Route("Crew10")]
+        [HttpGet]
+        public async Task<List<Crew>> GetCrew10() => await Services.Get10Async();
 
         // GET api/Crew
         [HttpGet]
